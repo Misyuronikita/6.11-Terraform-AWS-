@@ -4,40 +4,17 @@ provider "aws" {
 #----------------------
 # USERS
 #----------------------
-resource "aws_iam_user" "user1-1" {
-  name = "Givi"
-}
-
-resource "aws_iam_user" "user1-2" {
-  name = "Selin"
-}
-
-
-resource "aws_iam_user" "user2-1" {
-  name = "Slavik"
-}
-
-resource "aws_iam_user" "user2-2" {
-  name = "Rita"
+resource "aws_iam_user" "user_names" {
+  count = length(var.user_names)
+  name  = var.user_names[count.index]
 }
 
 #----------------------
 # ACCESS KEYS
 #----------------------
-resource "aws_iam_access_key" "user-key1-1" {
-  user = aws_iam_user.user1-1.name
-}
-
-resource "aws_iam_access_key" "user-key1-2" {
-  user = aws_iam_user.user1-2.name
-}
-
-resource "aws_iam_access_key" "user-key2-1" {
-  user = aws_iam_user.user2-1.name
-}
-
-resource "aws_iam_access_key" "user-key2-2" {
-  user = aws_iam_user.user2-2.name
+resource "aws_iam_access_key" "user_keys" {
+  count = length(aws_iam_user.user_names)
+  user  = aws_iam_user.user_names[count.index].name
 }
 
 #----------------------
@@ -77,7 +54,6 @@ resource "aws_iam_group_policy" "devopses" {
   group  = aws_iam_group.devopses.name
 }
 
-
 #----------------------
 # GROUPS
 #----------------------
@@ -89,17 +65,13 @@ resource "aws_iam_group" "devopses" {
   name = "DevOps-Group-Innowise"
 }
 
-
 #----------------------
 # MEMBERSHIPS
 #----------------------
 resource "aws_iam_group_membership" "developers" {
   name = "group-membership-developers"
 
-  users = [
-    aws_iam_user.user1-1.name,
-    aws_iam_user.user1-2.name
-  ]
+  users = var.developers_group[*]
 
   group = aws_iam_group.developers.name
 }
@@ -107,10 +79,7 @@ resource "aws_iam_group_membership" "developers" {
 resource "aws_iam_group_membership" "devopses" {
   name = "group-membership-devopses"
 
-  users = [
-    aws_iam_user.user2-1.name,
-    aws_iam_user.user2-2.name
-  ]
+  users = var.devopses_group[*]
 
   group = aws_iam_group.devopses.name
 }
